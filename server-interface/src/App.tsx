@@ -10,6 +10,8 @@ function CommandLog({ log }: { log: string }) {
 
 function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
   const [data, setData] = useState("");
+  const [screenData, setScreenData] = useState("");
+  const [response, setResponse] = useState("");
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setData(event.target.value);  
@@ -23,11 +25,13 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
       },
       body: JSON.stringify({ command: data })
     })
-    .then(response => response.text())
+    .then(response => response.json())
     .then(result => {
       sendCommand(result);
-      alert("FUCK");
+      alert(`Command sent: ${result.response}`);
       setData("");
+      setScreenData(result.screenData.binaryData);
+      setResponse(result.response);
     })
     .catch(error => console.log('error', error));
   };
@@ -36,6 +40,8 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
     <div>
       <input type="text" onChange={handleInputChange} value={data}/>
       <button onClick={handleClick}>Send</button>
+      <div>Screen Data: {screenData}</div>
+      <p>Response: {response}</p>
     </div>
   );
 }
