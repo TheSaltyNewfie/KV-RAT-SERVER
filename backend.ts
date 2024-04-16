@@ -1,3 +1,6 @@
+import { Socket } from "net";
+import { storeData } from "./data";
+
 const express = require('express');
 const net = require('net');
 const cors = require('cors');
@@ -9,15 +12,37 @@ app.use(express.json());
 
 let server_message = "";
 
-let clientSocket = null;
+let clientSocket: Socket | null = null;
 
 const server = net.createServer((socket) => {
-    clientSocket = socket;
+    let messageBuffer: string = "";
 
-    socket.on('data', (data) => {
-        console.log("Received: " + data.toString());
-        server_message = data;
-        console.log(`[TCP SERVER] Got back ${server_message}`);
+    clientSocket = socket;
+    console.log("Client connected");
+
+    socket.on('data', (data: Buffer) => {
+        const newData: string = data.toString();
+
+        messageBuffer += newData;
+
+        try {
+            const parsedData: any = JSON.parse(messageBuffer);
+
+            console.log("Received: ", parsedData);
+
+            storeData(parsedData.screenData.binaryData);
+
+            const message = {
+                response: parsedData.response.toString(),
+                information: parsedData.information.toString()
+            };
+
+            server_message = JSON.stringify(message);
+
+            messageBuffer = "";
+        } catch (error) {
+            console.log("Waiting for complete message...");
+        }
     });
 
     socket.on('end', () => {

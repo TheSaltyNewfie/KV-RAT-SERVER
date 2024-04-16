@@ -1,9 +1,22 @@
 import React, { useState } from 'react';
+import screenshot from './screenshot.png';
+import './App.css';
+import {OpenChrome} from './CommandButtons';
 
-function CommandLog({ log }: { log: string }) {
+
+function CommandPanel({className, sendCommand}: {className: string, sendCommand: (command: string) => void}) {
   return (
-    <div>
-      <textarea readOnly={true} value={log}/>
+    <div className={className}>
+      <h2>Command Panel</h2>
+      <OpenChrome sendCommand={sendCommand}/>
+    </div>
+  );
+}
+
+function CommandLog({className, log}: {className: string, log: string}) {
+  return (
+    <div className={className}>
+      <code className={className}>{log}</code>
     </div>
   );
 }
@@ -18,7 +31,7 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
   };
 
   const handleClick = () => {
-    fetch('http://localhost:3001/send', {
+    fetch('http://71.7.252.234:3001/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -27,7 +40,7 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
     })
     .then(response => response.json())
     .then(result => {
-      sendCommand(result);
+      sendCommand(JSON.stringify(result));
       alert(`Command sent: ${result.response}`);
       setData("");
       setScreenData(result.screenData.binaryData);
@@ -56,8 +69,10 @@ function App() {
   return (
     <div>
       <h1>Server Interface</h1>
-      <CommandLog log={log}/>
+      <CommandLog className="command-log" log={log}/>
       <CommandBox sendCommand={sendCommand}/>
+      <img src={screenshot} className="screenshot"></img>
+      <CommandPanel sendCommand={sendCommand} className="command-panel"/>
     </div>
   );
 }
