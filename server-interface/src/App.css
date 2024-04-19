@@ -1,17 +1,91 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.addition-button {
+  background-color: #242424;
+  color: white;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 0.5em;
+  cursor: pointer;
+  transition: background-color 300ms;
+}
+
+.info-area {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .screenshot {
-  width: 65%;
-  position: absolute;
-  top: 0;
-  right: 0;
+  width: 50%;
+  max-width: 50%;
+  max-height: 50%;
 }
 
 .command-log {
-  width: 500px; /* adjust as needed */
-  height: 300px; /* adjust as needed */
-  max-width: 500px;
-  max-height: 300px;
-  background-color: black;
+  width: 50%;
+  max-width: 50%;
+  max-height: 50%;
+  background-color: #1a1a1a;
   color: white; /* to make the text visible on the black background */
   overflow: auto; /* to add scrollbars if the content exceeds the width/height */
   white-space: pre-wrap; /* to wrap the text if it exceeds the width */
+  border-radius: 0.5em;
+}
+
+.command-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 80%; /* adjust as needed */
+  max-width: 500px; /* adjust as needed */
+  padding: 1em;
+  background-color: #424242;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.add-script {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 80%; /* adjust as needed */
+  max-width: 500px; /* adjust as needed */
+  padding: 1em;
+  background-color: #424242;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.Editor {
+  height: 100%;
+  width: 100%;
+  resize: none;
+  overflow: auto;
 }

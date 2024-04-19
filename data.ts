@@ -8,7 +8,7 @@ export function storeData(data: string) {
             console.error(err);
             return;
         }
-        const filePath = "screenshot.png";
+        const filePath = "server-interface/src/assets/screenshot.png";
         fs.writeFile(filePath, buffer, (err) => {
             if (err) {
                 console.error(err);

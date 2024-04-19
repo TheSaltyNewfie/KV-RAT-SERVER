@@ -1,5 +1,6 @@
 import { Socket } from "net";
 import { storeData } from "./data";
+import { Request } from "express";
 
 const express = require('express');
 const net = require('net');
@@ -13,12 +14,40 @@ app.use(express.json());
 let server_message = "";
 
 let clientSocket: Socket | null = null;
+let datastreamSocket: Socket | null = null;
+let awaitingData: boolean = true;
 
 const server = net.createServer((socket) => {
     let messageBuffer: string = "";
 
     clientSocket = socket;
     console.log("Client connected");
+
+    socket.on('data', (data: Buffer) => {
+        const parse = JSON.parse(data.toString());
+        
+        const message = {
+            response: parse.response,
+            information: parse.information
+        };
+        
+        server_message = JSON.stringify(message);
+        console.log(`[TCP SERVER] (${clientSocket.remoteAddress}) Got back ${server_message}`);
+        
+    });
+
+    socket.on('end', () => {
+        console.log("Client disconnected");
+        clientSocket = null;
+    });
+});
+
+const datastreamServer = net.createServer((socket) => {
+    let messageBuffer: string = "";
+    datastreamSocket = socket;
+    console.log("Datastream connected");
+
+    //socket.write("awaiting data");
 
     socket.on('data', (data: Buffer) => {
         const newData: string = data.toString();
@@ -28,29 +57,22 @@ const server = net.createServer((socket) => {
         try {
             const parsedData: any = JSON.parse(messageBuffer);
 
-            console.log("Received: ", parsedData);
-
-            storeData(parsedData.screenData.binaryData);
-
-            const message = {
-                response: parsedData.response.toString(),
-                information: parsedData.information.toString()
-            };
-
-            server_message = JSON.stringify(message);
-
             messageBuffer = "";
+            console.log("[TCP DS] Data gotten :^)");
+            storeData(parsedData.screenData);
+            datastreamSocket.write(JSON.stringify({ response: "Data received" }));
         } catch (error) {
-            console.log("Waiting for complete message...");
+            console.log("[TCP DS] Data not gotten :^(");
         }
     });
 
     socket.on('end', () => {
-        console.log("Client disconnected");
-        clientSocket = null;
+        console.log("Datastream disconnected");
+        datastreamSocket = null;
     });
 });
-app.get('/retrieve', (req, res) => {
+
+app.get('/retrieve', (req: Request, res) => {
     res.send(server_message);
     res.status(200);
     console.log("[HTTP SERVER] called /retrieve");
@@ -68,18 +90,33 @@ app.post('/send', (req, res) => {
 
     if (clientSocket) {
         clientSocket.write(JSON.stringify(message));
-        res.status(200).send(server_message);
-        console.log(`[TCP SERVER] Got back ${server_message}`);
         console.log("[HTTP SERVER] called /send");
+
+        new Promise<void>((resolve) => {
+            const checkServerMessage = setInterval(() => {
+                if(server_message !== "") {
+                    clearInterval(checkServerMessage);
+                    resolve();
+                }
+            }, 100);
+        })
+        .then(() => {
+            res.status(200).send(server_message);
+            console.log(`[TCP SERVER] Got back ${server_message}`);
+        });
     } else {
         res.status(500).send('No TCP client connected');
     }
 });
 
+datastreamServer.listen(3003, () => {
+    console.log('[TCP server] running on port 3003');
+});
+
 server.listen(3002, () => {
-    console.log('TCP server running on port 3002')
+    console.log('[TCP server] running on port 3002');
 });
 
 app.listen(3001, () => {
-    console.log('HTTP server running on port 3001');
+    console.log('[HTTP server running on port 3001');
 });

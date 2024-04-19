@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
-import screenshot from './screenshot.png';
-import './App.css';
-import {OpenChrome} from './CommandButtons';
+//import reactLogo from './assets/react.svg'
+//import viteLogo from '/vite.svg'
+import './App.css'
+import { VFC, useRef, useState, useEffect } from 'react';
+import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
+import Screenshot from '../../screenshot.png';
 
+function AddFunction({className, sendCommand, bIsOpen}: {className: string, sendCommand: (command: string) => void, bIsOpen: (value: boolean) => void}) {
+  return (
+    <div className={className}>
+      <h2>Add Function</h2>
+      <input type="text" placeholder="Function Name"/>
+      <Editor className='Editor' height="15vh" defaultLanguage="cpp" defaultValue="// Preferably copy and paste your code" theme='vs-dark'/>
+      <button onClick={() => {bIsOpen(false)}}>Finish</button>
+    </div>
+  );
+}
 
 function CommandPanel({className, sendCommand}: {className: string, sendCommand: (command: string) => void}) {
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className={className}>
       <h2>Command Panel</h2>
-      <OpenChrome sendCommand={sendCommand}/>
+      <button>Open Chrome</button>
+      <button className="addition-button" onClick={() => setIsOpen(!isOpen)}>+</button>
+      {isOpen && <AddFunction className="add-script" sendCommand={sendCommand} bIsOpen={setIsOpen}/>}
     </div>
   );
 }
@@ -31,7 +46,7 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
   };
 
   const handleClick = () => {
-    fetch('http://71.7.252.234:3001/send', {
+    fetch('http://localhost:3001/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -53,26 +68,45 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
     <div>
       <input type="text" onChange={handleInputChange} value={data}/>
       <button onClick={handleClick}>Send</button>
-      <div>Screen Data: {screenData}</div>
-      <p>Response: {response}</p>
     </div>
   );
 }
 
 function App() {
   const [log, setLog] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState(Screenshot);
 
   const sendCommand = (cmd: string) => {
     setLog(prevLog => prevLog + "\n" + cmd);
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch('/screenshot.png')
+        .then(response => response.blob())
+        .then(blob => {
+          // Create a new URL object from the blob
+          const blobUrl = URL.createObjectURL(blob);
+  
+          // Set the blob URL as the image source
+          setImageSrc(blobUrl);
+        });
+    }, 1000);
+  
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div>
       <h1>Server Interface</h1>
-      <CommandLog className="command-log" log={log}/>
+      <div className="info-area">
+        <CommandLog className="command-log" log={log}/>
+        <img src={imageSrc} alt="screenshot" className="screenshot"></img>
+      </div>
       <CommandBox sendCommand={sendCommand}/>
-      <img src={screenshot} className="screenshot"></img>
-      <CommandPanel sendCommand={sendCommand} className="command-panel"/>
+      <button onClick={() => setIsOpen(!isOpen)}>{isOpen ? "Close" : "Open"} Command Panel</button>
+      {isOpen && <CommandPanel className="command-panel" sendCommand={sendCommand}/>}
     </div>
   );
 }
