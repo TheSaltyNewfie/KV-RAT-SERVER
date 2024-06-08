@@ -58,7 +58,7 @@ function CommandBox({sendCommand}: { sendCommand: (command: string) => void }) {
       sendCommand(JSON.stringify(result));
       alert(`Command sent: ${result.response}`);
       setData("");
-      setScreenData(result.screenData.binaryData);
+      //setScreenData(result.screenData.binaryData);
       setResponse(result.response);
     })
     .catch(error => console.log('error', error));
@@ -80,22 +80,6 @@ function App() {
   const sendCommand = (cmd: string) => {
     setLog(prevLog => prevLog + "\n" + cmd);
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch('/screenshot.png')
-        .then(response => response.blob())
-        .then(blob => {
-          // Create a new URL object from the blob
-          const blobUrl = URL.createObjectURL(blob);
-  
-          // Set the blob URL as the image source
-          setImageSrc(blobUrl);
-        });
-    }, 1000);
-  
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div>

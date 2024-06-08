@@ -105,7 +105,7 @@ app.post('/send', (req, res) => {
             console.log(`[TCP SERVER] Got back ${server_message}`);
         });
     } else {
-        res.status(500).send('No TCP client connected');
+        res.status(500).send(JSON.stringify({ response: "No client connected" }));
     }
 });
 
